@@ -1,5 +1,5 @@
-# SPH in CUDA
-SPH for Newtonian fluids with wall boundaries and suspensions of spherical particles, implemented in CUDA.
+# SPH magnetic particles in CUDA
+SPH for Newtonian fluids with wall boundaries and suspensions of spherical magnetic particles, implemented in CUDA.
 
 Developed by Adolfo Vázquez-Quesada. 
 
