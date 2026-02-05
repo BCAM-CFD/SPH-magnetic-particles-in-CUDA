@@ -27,6 +27,8 @@ dim     -> Number of dimensions
 
 dt      -> Time steps
 
+t0      -> Initial time
+
 Nsteps  -> Number of steps
 
 overlap -> rcut / dx   (where dx = L/N)
