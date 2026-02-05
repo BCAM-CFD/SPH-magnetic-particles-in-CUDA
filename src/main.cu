@@ -13,6 +13,7 @@ email: a.vazquez-quesada@fisfun.uned.es
 
 //---- Declaration of a function of main ------------
 __host__ void print_main_vars(real delta_t,
+			      real t_ini,			      
 			      int Nsteps,
 			      int freq_micro,
 			      int freq_macro,
@@ -37,7 +38,8 @@ int main() {
   clock_t start_forces;
   clock_t end_forces;
   double time_neighbours = 0.0;
-  double time_forces     = 0.0;  
+  double time_forces     = 0.0;
+  double t_ini           = 0.0;  
 
   //--------------------------------------------------------------------  
   //--- Declaration of the input variables (and their default values)---
@@ -84,7 +86,7 @@ int main() {
   //-------------------------------
   //-----  Input file is read  ----
   //-------------------------------  
-  error = sys.read_input(Nxyz, Lbox, num_dim, delta_t, Nsteps,
+  error = sys.read_input(Nxyz, Lbox, num_dim, delta_t, t_ini, Nsteps,
 			 overlap, rho, c, P0, eta, zeta,
 			 ext_f_type, ext_f,
 			 freq_micro, freq_macro, freq_walls, freq_colloids,
@@ -98,7 +100,7 @@ int main() {
   //-------------------------------------------------------------------------
   //----- Main variables are printed (print_main_vars is defined below) -----
   //-------------------------------------------------------------------------  
-  print_main_vars(delta_t, Nsteps, freq_micro, freq_macro, freq_walls,
+  print_main_vars(delta_t, t_ini, Nsteps, freq_micro, freq_macro, freq_walls,
 		  freq_colloids, new_sim, coll_move, N_coll);
 
   //----------------------------------------------  
@@ -258,8 +260,8 @@ int main() {
 
   //----------------------------------------------------------  
   //--- Magnetic angle and magnetic moment are initialized ---
-  //----------------------------------------------------------    
-  real angle_magnet = 0.0;
+  //----------------------------------------------------------
+  real angle_magnet = sys.omega_magnet * t_ini;  
   real magnetic_mom[3] = {cos(angle_magnet), sin(angle_magnet), 0.0};
   // The value of magnetic_mom is passed to the GPU
   cudaMemcpy(k_magnetic_mom, magnetic_mom, 3 * sizeof(real), cudaMemcpyHostToDevice);
@@ -352,7 +354,7 @@ int main() {
       return; // End of program
 
     //--- Magnetic angle and magnetic moment are calculated ---
-    angle_magnet    = sys.omega_magnet * delta_t * (double)(step);
+    angle_magnet    = sys.omega_magnet * (t_ini + delta_t * (double)(step));    
     magnetic_mom[0] = cos(angle_magnet);
     magnetic_mom[1] = sin(angle_magnet);
     magnetic_mom[2] = 0.0;
@@ -467,6 +469,7 @@ int main() {
     cudaFree(k_coll_index);
     cudaFree(k_coll_cell_start);
     cudaFree(k_coll_cell_end);
+    cudaFree(k_magnetic_mom);
   }
   cudaDeviceReset();      
 
@@ -485,17 +488,19 @@ int main() {
 //-----------------------------------------------
 //----  Function  to print variables of main ----
 __host__ void print_main_vars(real delta_t,
-		     int  Nsteps,
-		     int  freq_micro,
-		     int  freq_macro,
-		     int  freq_walls,
-		     int  freq_colloids,
-		     int  new_sim,
-		     int  coll_move,
-		     int  N_coll) {
-
+			      real t_ini,			      
+			      int  Nsteps,
+			      int  freq_micro,
+			      int  freq_macro,
+			      int  freq_walls,
+			      int  freq_colloids,
+			      int  new_sim,
+			      int  coll_move,
+			      int  N_coll) {
+  
   std::cout << "--- Main variables ----\n";
   std::cout << "Time step                 = " << delta_t  << "\n";
+  std::cout << "Initial time              = " << t_ini  << "\n";    
   std::cout << "Number of steps           = " << Nsteps  << "\n";
   std::cout << "Output frequency micro    = " << freq_micro  << "\n";
   std::cout << "Output frequency macro    = " << freq_macro  << "\n";

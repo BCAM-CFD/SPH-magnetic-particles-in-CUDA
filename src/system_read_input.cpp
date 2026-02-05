@@ -11,6 +11,7 @@ int class_system::read_input(int   N[3],
 			     real  L[3],
 			     int&  dim,
 			     real& dt,
+			     real& t_ini,			     
 			     int&  Nsteps,
 			     real& overlap,
 			     real& rho,
@@ -55,6 +56,7 @@ int class_system::read_input(int   N[3],
   int L_read               = 1;
   int dim_read             = 1;
   int dt_read              = 1;
+  int t_ini_read           = 1;    
   int Nsteps_read          = 1;
   int overlap_read         = 1;
   int rho_read             = 1;
@@ -102,33 +104,31 @@ int class_system::read_input(int   N[3],
       N[2]                 = (int)val3;
       dim_N                = 3;
       N_read               = 0;
-    }
-    else if (strcmp(var, "N") == 0 && count == 3) {
+    } else if (strcmp(var, "N") == 0 && count == 3) {
 	N[0]               = (int)val1;
 	N[1]               = (int)val2;
 	dim_N              = 2;
 	N_read             = 0;
-      }
-    else if (strcmp(var, "L") == 0 && count == 4) {
+    } else if (strcmp(var, "L") == 0 && count == 4) {
       L[0]                 = val1;
       L[1]                 = val2;
       L[2]                 = val3;
       dim_L                = 3;
       L_read               = 0;
-    }
-    else if (strcmp(var, "L") == 0 && count == 3) {
+    } else if (strcmp(var, "L") == 0 && count == 3) {
       L[0]                 = val1;
       L[1]                 = val2;
       dim_L                = 2;
       L_read               = 0;
-      }
-    else if (strcmp(var, "dim") == 0 && count >= 2) {
+    } else if (strcmp(var, "dim") == 0 && count >= 2) {
       dim                  = (int)val1;
       dim_read             = 0;
-    }
-    else if (strcmp(var, "dt") == 0 && count >= 2) {
+    } else if (strcmp(var, "dt") == 0 && count >= 2) {
       dt                   = val1;
       dt_read              = 0;
+    } else if (strcmp(var, "t0") == 0 && count >= 2) {
+      t_ini                = val1;
+      t_ini_read           = 0;      
     } else if (strcmp(var, "Nsteps") == 0 && count >= 2) {
       Nsteps               = (int)val1;
       Nsteps_read          = 0;
@@ -262,6 +262,10 @@ int class_system::read_input(int   N[3],
     printf("system_read_input error: dt was not read\n");
     return 1;
   }
+  if (t_ini_read == 1)  {
+    printf("system_read_input error: t0 was not read\n");
+    return 1;
+  }    
   if (Nsteps_read == 1)  {
     printf("system_read_input error: Nsteps was not read\n");
     return 1;

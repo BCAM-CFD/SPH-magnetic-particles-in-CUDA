@@ -137,6 +137,7 @@ struct class_system {
 		 real  L[3],
 		 int&  dim,
 		 real& delta_t,
+		 real& t_ini,		 
 		 int&  Nsteps,
 		 real& overlap,
 		 real& rho,
