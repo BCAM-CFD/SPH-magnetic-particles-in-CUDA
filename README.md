@@ -16,9 +16,8 @@ mail: a.vazquez-quesada@fisfun.uned.es
 
 - main.cu is the main file of the code.
 
-*******************************
-      Compilation 
-*******************************
+# Compilation 
+
 The compilation is done with the makefile file. 
 To compile, just write the following command in the command line:
 
@@ -27,9 +26,9 @@ make
 If you want to clean everthing before compiling again, just do
 
 make clean
-*******************************
-         input variables 
-*******************************
+
+# input variables 
+
 N       -> Number of particles in each direction ( in a rectangular grid)
 
 L       -> Box length in each direction.
@@ -115,9 +114,9 @@ new_sim ->
        0: new simulation.
 	   
 	   1: existing simulation 
-************************************
-Key of the output files
-************************************
+
+# Key of the output files
+
 micro: 
 
        -- 2D --
@@ -166,24 +165,34 @@ micro:
 
 walls: 
 
-	   -- 2D --
-	   
-       1 -> wall identity
-	   
-       2 -> force x
-	   
-       3 -> force y
-	   
-       -- 3D --
-	   
-       1 -> wall identity
-	   
-       2 -> force x
-	   
-       3 -> force y
-	   
-       4 -> force z
+		-- 2D --
 
+       1 -> Step
+
+       2 -> force x on bottom wall
+
+       3 -> force y on bottom wall
+
+       4 -> force x on top wall
+
+       5 -> force y on top wall
+
+       -- 3D --
+
+       1 -> Step
+
+       2 -> force x on bottom wall
+
+       3 -> force y on bottom wall
+
+       4 -> force z on bottom wall
+
+	   5 -> force x on top wall
+
+       6 -> force y on top wall
+
+       7 -> force z on top wall
+	   
 colloids: 
 
       -- 2D --
@@ -242,9 +251,8 @@ macro:
 	   
        2 -> Total kinetic energy
 
-*****************************
-To restart a simulation
-*****************************
+# To restart a simulation
+
 1.- Use the same input file of the initial simulation (or some variation of it).
 
 2.- In the input file: new_sim 1
