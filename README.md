@@ -4,6 +4,7 @@ SPH for Newtonian fluids with wall boundaries and suspensions of spherical magne
 Developed by Adolfo Vázquez-Quesada. 
 
 mail: a.vazquez-quesada@fisfun.uned.es
+
 --------------------------------------------------
 
 - Host variables and functions are declared in class_system.h.
@@ -16,7 +17,7 @@ mail: a.vazquez-quesada@fisfun.uned.es
 
 - main.cu is the main file of the code.
 
-# Compilation 
+@# Compilation 
 
 The compilation is done with the makefile file. 
 To compile, just write the following command in the command line:
@@ -27,33 +28,44 @@ If you want to clean everthing before compiling again, just do
 
 make clean
 
-# input variables 
+## Running a simulation
 
-N       -> Number of particles in each direction ( in a rectangular grid)
+You need to have the following files in the same directory (with the exact names shown below):
 
-L       -> Box length in each direction.
+- **SPH_program**: the executable.
+- **input**: a file containing the program inputs.
 
-dim     -> Number of dimensions
+To run the program, execute:
 
-dt      -> Time steps
+./SPH_program
 
-t0      -> Initial time
+## input variables 
 
-Nsteps  -> Number of steps
+**N**       -> Number of particles in each direction ( in a rectangular grid)
 
-overlap -> rcut / dx   (where dx = L/N)
+**L**      -> Box length in each direction.
 
-rho     -> fluid density
+**dim**     -> Number of dimensions
 
-c       -> Speed of sound
+**dt**      -> Time steps
 
-P0      -> parameter of the equation of state
+**t0**      -> Initial time
 
-eta     -> shear viscosity
+**Nsteps**  -> Number of steps
 
-zeta    -> bulk viscosity
+**overlap** -> rcut / dx   (where dx = L/N)
 
-ext_force_type -> Type of external force:
+**rho**     -> fluid density
+
+**c**       -> Speed of sound
+
+**P0**      -> parameter of the equation of state
+
+**eta**     -> shear viscosity
+
+**zeta**    -> bulk viscosity
+
+**ext_force_type** -> Type of external force:
 
 	       0: No external force
 		   
@@ -63,59 +75,59 @@ ext_force_type -> Type of external force:
 
 		   3: force to simulate inverse Poiseuille flow
 		   
-ext_force -> External force vector
+**ext_force** -> External force vector
 
-freq_micro    -> Frequency to write micro file.
+**freq_micro**    -> Frequency to write micro file.
 
-freq_macro    -> Frequency to write macro file.
+**freq_macro**    -> Frequency to write macro file.
 
-freq_walls    -> Frequency to write walls file.
+**freq_walls**    -> Frequency to write walls file.
 
-freq_colloids -> Frequency to write colloids file.
+**freq_colloids** -> Frequency to write colloids file.
 
-wall -> walls are normal to the y-direction.
+**wall** -> walls are normal to the y-direction.
 
 	    0: no walls
 		
      	1: walls
 		
-Vwall_bottom -> x-velocity of the bottom wall.
+**Vwall_bottom** -> x-velocity of the bottom wall.
 
-Vwall_top    -> x-velocity of the top wall.
+**Vwall_top**    -> x-velocity of the top wall.
 
-N_colloids -> Number of colloidal particles.
+**N_colloids** -> Number of colloidal particles.
 
-coll_R     -> Colloids radius.
+**coll_R**     -> Colloids radius.
 
-coll_rho   -> Colloids density.
+**coll_rho**   -> Colloids density.
 
-coll_move  -> 
+**coll_move**  -> 
  
           0: colloids are moving.
 		  
 	      1: colloids are not moving.
 		  
-coll_x     -> Position of one colloid. Put as many coll_x as needed.
+**coll_x**     -> Position of one colloid. Put as many coll_x as needed.
 
-coll_repulsion_cuton -> Cut on of the repulsion force between colloids.
+**coll_repulsion_cuton** -> Cut on of the repulsion force between colloids.
 
-F0_repulsion         -> Magnitude of the repulsion force.
+**F0_repulsion**         -> Magnitude of the repulsion force.
 
-tau_repulsion        -> Tau parameter of the repulsion force (related to the cut off radius of the repulsion force).
+**tau_repulsion**        -> Tau parameter of the repulsion force (related to the cut off radius of the repulsion force).
 
-cutoff_magnetic -> Cut off radius of the magnetic force.
+**cutoff_magnetic** -> Cut off radius of the magnetic force.
 
-F0_magnetic     -> F0 parameter of the magnetic force.
+**F0_magnetic**     -> F0 parameter of the magnetic force.
 
-omega_magnetic  -> Angular velocity of the rotation of the magnetic field.
+**omega_magnetic**  -> Angular velocity of the rotation of the magnetic field.
 
-new_sim -> 
+**new_sim** -> 
 
        0: new simulation.
 	   
 	   1: existing simulation 
 
-# Key of the output files
+## Key of the output files
 
 micro: 
 
@@ -251,7 +263,7 @@ macro:
 	   
        2 -> Total kinetic energy
 
-# To restart a simulation
+## To restart a simulation
 
 1.- Use the same input file of the initial simulation (or some variation of it).
 
