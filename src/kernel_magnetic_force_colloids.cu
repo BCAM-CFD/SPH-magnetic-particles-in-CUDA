@@ -110,7 +110,7 @@ __global__ void kernel_magnetic_force_colloids(real* __restrict__ coll_x,
 			      (5.0 * m_dot_eij_sq - 1.0) * eij[0]);
 	      fy_colloid[i] = fy_colloid[i] +
 		F0_over_r4 * (2.0 * m_dot_eij * magnetic_mom[1] -
-			      (5.0 * m_dot_eij_sq - 1.0) * eij[1]);			       
+			      (5.0 * m_dot_eij_sq - 1.0) * eij[1]);
 	    }
 	  }
       }

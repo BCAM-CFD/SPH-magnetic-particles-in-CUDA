@@ -63,6 +63,7 @@ __global__ void kernel_print_constants() {
       printf("Magnetic force cutoff             = " REAL_FMT "\n", r0_magnet);
       printf("Magnetic force cutoff square      = " REAL_FMT "\n", r0_magnet_sq);      
       printf("Magnetic force magnitude          = " REAL_FMT "\n", F0_magnet);
+      printf("Magnetic angular velocity is not a GPU constant: it is handled in main\n");
       printf("Colloids cutoff                   = " REAL_FMT "\n", rcutoff_coll);
       printf("Colloids cell size                = " REAL_FMT " " REAL_FMT " " REAL_FMT " \n",
 	     cell_colloids_size[0], cell_colloids_size[1], cell_colloids_size[2]);
