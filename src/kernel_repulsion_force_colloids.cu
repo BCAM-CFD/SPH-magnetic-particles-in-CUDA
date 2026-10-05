@@ -103,17 +103,17 @@ __global__ void kernel_repulsion_force_colloids(real* __restrict__ coll_x,
 	      
 	    rijsq = rij[0]*rij[0] + rij[1]*rij[1];
 
-	    // If both particles are too close
-	    if (rijsq < rcuton_coll_rep_sq)
-	      rijsq = rcuton_coll_rep_sq;
-
 	    if (rijsq <= rcutoff_coll_rep_sq) {
 	      real eij[2];
-	      real r              = sqrt(rijsq);
-	      real r_inv          = 1.0/sqrt(r);
+	      real r_real         = sqrt(rijsq);
+	      real r;
+	      if (rijsq < rcuton_coll_rep_sq) //If both particles are too close
+		r = rcuton_coll_rep;
+	      else
+		r = r_real;	      
 	      real tau_s_neg      = -tau_rep * (r - 2.0 * coll_R)/coll_R;
-	      eij[0]              = rij[0]/r;
-	      eij[1]              = rij[1]/r;
+	      eij[0]              = rij[0]/r_real;
+	      eij[1]              = rij[1]/r_real;
 	      real exp_tau_s_neg  = exp(tau_s_neg);
 	      real Frep_mod       = Famp * exp_tau_s_neg / (1.0 - exp_tau_s_neg);
 	      fx_colloid[i]       = fx_colloid[i] + Frep_mod * eij[0];
@@ -182,18 +182,18 @@ __global__ void kernel_repulsion_force_colloids(real* __restrict__ coll_x,
 	      
 	      rijsq = rij[0]*rij[0] + rij[1]*rij[1] + rij[2]*rij[2];
 
-	      // If both particles are too close
-	      if (rijsq < rcuton_coll_rep_sq)
-		rijsq = rcuton_coll_rep_sq;
-
 	      if (rijsq <= rcutoff_coll_rep_sq) {
 		real eij[3];
-		real r              = sqrt(rijsq);
-		real r_inv          = 1.0/sqrt(r);
+		real r_real         = sqrt(rijsq);
+		real r;
+		if (rijsq < rcuton_coll_rep_sq) //If both particles are too close
+		  r = rcuton_coll_rep;
+		else
+		  r = r_real;		
 		real tau_s_neg      = -tau_rep * (r - 2.0 * coll_R)/coll_R;
-		eij[0]              = rij[0]/r;
-		eij[1]              = rij[1]/r;
-		eij[2]              = rij[2]/r;	      
+		eij[0]              = rij[0]/r_real;
+		eij[1]              = rij[1]/r_real;
+		eij[2]              = rij[2]/r_real;	      
 		real exp_tau_s_neg  = exp(tau_s_neg);
 		real Frep_mod       = Famp * exp_tau_s_neg / (1.0 - exp_tau_s_neg);
 		fx_colloid[i]       = fx_colloid[i] + Frep_mod * eij[0];

@@ -305,7 +305,7 @@ int main() {
   //--- Initial state is printed ---
   //--------------------------------    
   sys.print_output(numBlocks, threadsPerBlock,
-		   k_x, k_y, k_z, k_vx, k_vy, k_vz, k_mass, k_dens, k_press,
+		   k_x, k_y, k_z, k_vx, k_vy, k_vz, k_mass, k_type, k_dens, k_press,
 		   k_fx_wall, k_fy_wall, k_fz_wall,
 		   k_coll_x, k_coll_y, k_coll_z,
 		   k_coll_vx, k_coll_vy, k_coll_vz,
@@ -395,7 +395,7 @@ int main() {
 
     //--- Output is written in output files ---
     sys.print_output(numBlocks, threadsPerBlock,
-		     k_x, k_y, k_z, k_vx, k_vy, k_vz, k_mass, k_dens, k_press,
+		     k_x, k_y, k_z, k_vx, k_vy, k_vz, k_mass, k_type, k_dens, k_press,
 		     k_fx_wall, k_fy_wall, k_fz_wall,
 		     k_coll_x, k_coll_y, k_coll_z,
 		     k_coll_vx, k_coll_vy, k_coll_vz,
