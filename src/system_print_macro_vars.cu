@@ -1,7 +1,8 @@
 /******************************************************
-This code has been developed by Adolfo Vazquez-Quesada,
-from the Department of Fundamental Physics at UNED, in
-Madrid, Spain.
+This code has been developed by:
+Adolfo Vazquez-Quesada (1) and Jose Manuel Moreno Valderrama (2)
+(1) Department of Fundamental Physics at UNED, Madrid, Spain
+(2) Remedy Entertainment
 email: a.vazquez-quesada@fisfun.uned.es
 ********************************************************/
 
@@ -25,13 +26,12 @@ void class_system::print_macro_vars(dim3 numBlocks,
 				    int step) {
   //--  Macro variables are set to zero --
   kernel_macro_vars_to_zero<<<1, 1>>>(kin_energy);
-  cudaDeviceSynchronize();  // We require the kernel to end to continue
+  // cudaDeviceSynchronize();  // We require the kernel to end to continue
 
   //-- Macro variables are calculated --
   kernel_calculate_macro_vars<<<numBlocks, threadsPerBlock>>>(k_mass, k_vx, k_vy, k_vz, k_type,
 							      k_coll_vx, k_coll_vy, k_coll_vz,
 							      kin_energy);
-
   //-- Macro variables are copied into the host --
   cudaMemcpy(&this->kin_energy, kin_energy, sizeof(real), cudaMemcpyDeviceToHost);  
 

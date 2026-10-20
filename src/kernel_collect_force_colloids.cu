@@ -1,7 +1,8 @@
 /******************************************************
-This code has been developed by Adolfo Vazquez-Quesada,
-from the Department of Fundamental Physics at UNED, in
-Madrid, Spain.
+This code has been developed by:
+Adolfo Vazquez-Quesada (1) and Jose Manuel Moreno Valderrama (2)
+(1) Department of Fundamental Physics at UNED, Madrid, Spain
+(2) Remedy Entertainment
 email: a.vazquez-quesada@fisfun.uned.es
 ********************************************************/
 
@@ -32,16 +33,16 @@ __global__ void kernel_collect_force_colloids(real* __restrict__ fx_colloid,
   if (i >= N_colloids) return;
   // i is the identity of the colloid
 
-  real fx_colloid_i = fx_colloid[i];
-  real fy_colloid_i = fy_colloid[i];
-  real tz_colloid_i = tz_colloid[i];
+  real fx_colloid_i = fx_colloid[i] = 0;
+  real fy_colloid_i = fy_colloid[i] = 0;
+  real tz_colloid_i = tz_colloid[i] = 0;
   real fz_colloid_i;
   real tx_colloid_i;
   real ty_colloid_i;  
   if (dim == 3) {
-    fz_colloid_i = fz_colloid[i];
-    tx_colloid_i = tx_colloid[i];
-    ty_colloid_i = ty_colloid[i];
+    fz_colloid_i = fz_colloid[i] = 0;
+    tx_colloid_i = tx_colloid[i] = 0;
+    ty_colloid_i = ty_colloid[i] = 0;
   }  
   int colloids_end_i;
   if (i < N_colloids - 1)
@@ -81,7 +82,8 @@ __global__ void kernel_collect_force_colloids(real* __restrict__ fx_colloid,
     tz_colloid_i = tz_colloid_i + rx * fy[part] - ry * fx[part];
     if (dim == 3) {
       tx_colloid_i = tx_colloid_i + ry * fz[part] - rz * fy[part];
-      ty_colloid_i = ty_colloid_i + rz * fx[part] - rx * fz[part];    
+      ty_colloid_i = ty_colloid_i + rz * fx[part] - rx * fz[part];        
+    
     }
   }
 

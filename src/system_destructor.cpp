@@ -1,7 +1,8 @@
 /******************************************************
-This code has been developed by Adolfo Vazquez-Quesada,
-from the Department of Fundamental Physics at UNED, in
-Madrid, Spain.
+This code has been developed by:
+Adolfo Vazquez-Quesada (1) and Jose Manuel Moreno Valderrama (2)
+(1) Department of Fundamental Physics at UNED, Madrid, Spain
+(2) Remedy Entertainment
 email: a.vazquez-quesada@fisfun.uned.es
 ********************************************************/
 
@@ -30,6 +31,19 @@ void class_system::destructor() {
   if (fz)  
   delete[] fz;
 
+  if (cxx_tensor)
+    delete[] cxx_tensor;
+  if (cxy_tensor)
+    delete[] cxy_tensor;
+  if (cyy_tensor)
+    delete[] cyy_tensor;
+  if (cxz_tensor)
+    delete[] cxz_tensor;
+  if (cyz_tensor)
+    delete[] cyz_tensor;
+  if (czz_tensor)
+    delete[] czz_tensor;
+  
   if (mass)
     delete[] mass;
 

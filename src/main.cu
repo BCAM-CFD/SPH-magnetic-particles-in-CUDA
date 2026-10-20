@@ -1,7 +1,8 @@
 /******************************************************
-This code has been developed by Adolfo Vazquez-Quesada,
-from the Department of Fundamental Physics at UNED, in
-Madrid, Spain.
+This code has been developed by:
+Adolfo Vazquez-Quesada (1) and Jose Manuel Moreno Valderrama (2)
+(1) Department of Fundamental Physics at UNED, Madrid, Spain
+(2) Remedy Entertainment
 email: a.vazquez-quesada@fisfun.uned.es
 ********************************************************/
 
@@ -30,16 +31,16 @@ int main() {
 
   //-----------------------------------
   //----- Some declarations -----------
-  //-----------------------------------  
-  int error = 0;
+  //-----------------------------------
+  int         error = 0;
   cudaError_t cuda_err;
-  clock_t start_neighbours;
-  clock_t end_neighbours;
-  clock_t start_forces;
-  clock_t end_forces;
-  double time_neighbours = 0.0;
-  double time_forces     = 0.0;
-  double t_ini           = 0.0;  
+  clock_t     start_neighbours;
+  clock_t     end_neighbours;
+  clock_t     start_forces;
+  clock_t     end_forces;
+  double      time_neighbours = 0.0;
+  double      time_forces     = 0.0;
+  real        t_ini           = 0.0;  
 
   //--------------------------------------------------------------------  
   //--- Declaration of the input variables (and their default values)---
@@ -55,6 +56,9 @@ int main() {
   real P0              = 1.0;
   real eta             = 1.0;
   real zeta            = 0.0;
+  real np              = 1.0;
+  real kT              = 1.0;
+  real elast_time      = 1.0;
   int  ext_f_type      = 0;  
   real ext_f[3]        = {0.0, 0.0, 0.0};
   int  freq_micro      = 1000;
@@ -68,14 +72,14 @@ int main() {
   real coll_radius     = 1.0;
   real coll_density    = 1.0;
   real coll_x_data[MAX_COLLOIDS][MAX_VALUES_PER_COLLOID];
-  int  coll_move       = 0;
+  int  coll_move       = 1;
   real coll_repulsion_cuton  = 0.001;  
-  int  new_sim         = 0;
+  int  new_sim         = 1;
   real F0_repulsion    = 1.0;
   real tau_repulsion   = 0.01;
   real cutoff_magnetic = 0.1;
   real F0_magnetic     = 1.0;
-  real omega_magnetic  = 0.01;
+  real omega_magnetic  = 0.01;    
 
   //--------------------------------------------------------------------  
   //---------- initialization ------------------------------------------
@@ -88,6 +92,7 @@ int main() {
   //-------------------------------  
   error = sys.read_input(Nxyz, Lbox, num_dim, delta_t, t_ini, Nsteps,
 			 overlap, rho, c, P0, eta, zeta,
+			 np, kT, elast_time, 	 
 			 ext_f_type, ext_f,
 			 freq_micro, freq_macro, freq_walls, freq_colloids,
 			 wall_host, Vwall_top, Vwall_bottom,
@@ -95,7 +100,7 @@ int main() {
 			 coll_repulsion_cuton, F0_repulsion, tau_repulsion,
 			 cutoff_magnetic, F0_magnetic, omega_magnetic, new_sim);
   if (error != 0)
-    return; // End of program
+    return 1; // End of program
 
   //-------------------------------------------------------------------------
   //----- Main variables are printed (print_main_vars is defined below) -----
@@ -117,14 +122,14 @@ int main() {
   //---- The system is initialized -----
   //------------------------------------    
   error = sys.initialize(Nxyz, Lbox, num_dim, overlap, rho, c,
-			 P0, eta, zeta, ext_f_type, ext_f,
+			 P0, eta, zeta, np, kT, elast_time, ext_f_type, ext_f,
 			 wall_host, Vwall_top, Vwall_bottom,
 			 N_coll, coll_radius, coll_density,
 			 coll_x_data, coll_repulsion_cuton, F0_repulsion,
 			 tau_repulsion, cutoff_magnetic,
 			 F0_magnetic, omega_magnetic, new_sim);
   if (error != 0)
-    return;  
+    return 1;  
 
   //----------------------------------  
   //---- System info is displayed ----
@@ -139,6 +144,7 @@ int main() {
   real *k_mass;
   real *k_fx, *k_fy, *k_fz;
   real *k_dens;
+  real *k_inv_dens;
   real *k_press;
   int  *k_particle_cell;
   int  *k_particle_index;
@@ -146,6 +152,19 @@ int main() {
   int  *k_cell_end;
   real *k_kin_energy;
   int  *k_type;
+  real *k_Pixx_over_dens_sq;
+  real *k_Pixy_over_dens_sq;
+  real *k_Piyy_over_dens_sq;
+  real *k_Pixz_over_dens_sq;
+  real *k_Piyz_over_dens_sq;
+  real *k_Pizz_over_dens_sq;  
+  real *k_cxx, *k_cxy, *k_cyy;
+  real *k_cxz, *k_cyz, *k_czz;
+  real *k_dcdt_xx, *k_dcdt_xy, *k_dcdt_yy;
+  real *k_dcdt_xz, *k_dcdt_yz, *k_dcdt_zz;  
+  real *k_gradvxx, *k_gradvxy, *k_gradvxz;
+  real *k_gradvyx, *k_gradvyy, *k_gradvyz;
+  real *k_gradvzx, *k_gradvzy, *k_gradvzz;    
   real *k_fx_wall, *k_fy_wall, *k_fz_wall;
   int  *k_walls_list;
   int  *k_walls_start;
@@ -163,7 +182,7 @@ int main() {
   int  *k_coll_index;
   int  *k_coll_cell_start;
   int  *k_coll_cell_end;
-  real *k_magnetic_mom;
+  float4 *k_posf;
 
   //-------------------------------------------------------------      
   //----- Some variables (constants) are passed to the GPU ------
@@ -182,6 +201,8 @@ int main() {
   cudaMemcpyToSymbol(rho0                 , &sys.rho0                 , sizeof(real));
   cudaMemcpyToSymbol(a                    , &sys.a                    , sizeof(real));
   cudaMemcpyToSymbol(b                    , &sys.b                    , sizeof(real));
+  cudaMemcpyToSymbol(nkT                  , &sys.nkT                  , sizeof(real));
+  cudaMemcpyToSymbol(tau                  , &sys.tau                  , sizeof(real));
   cudaMemcpyToSymbol(dt                   , &delta_t                  , sizeof(real));
   cudaMemcpyToSymbol(cell_size            , &sys.cell_size            , sizeof(real) * 3);
   cudaMemcpyToSymbol(Ncells               , &sys.Ncells               , sizeof(int) * 3);
@@ -217,6 +238,8 @@ int main() {
   cudaMemcpyToSymbol(Ntotal_cells_colloids, &sys.Ntotal_cells_colloids, sizeof(int));
   cudaMemcpyToSymbol(F0_rep               , &sys.F0_rep               , sizeof(real));
   cudaMemcpyToSymbol(tau_rep              , &sys.tau_rep              , sizeof(real));
+  cudaMemcpyToSymbol(Lf                   , &sys.Lf                   , sizeof(float) * 3);
+  cudaMemcpyToSymbol(rcutsq_f             , &sys.rcutsq_f             , sizeof(float));
   cudaMemcpyToSymbol(r0_magnet            , &sys.r0_magnet            , sizeof(real));
   cudaMemcpyToSymbol(r0_magnet_sq         , &sys.r0_magnet_sq         , sizeof(real));  
   cudaMemcpyToSymbol(F0_magnet            , &sys.F0_magnet            , sizeof(real));
@@ -224,22 +247,37 @@ int main() {
   //--------------------------------------------------------  
   //---- Memory for pointers is allocated in the device ----
   //--------------------------------------------------------  
-  sys.copy_pointers_to_device(&k_x, &k_y, &k_z, &k_vx, &k_vy, &k_vz, &k_mass, &k_fx, &k_fy,
-			      &k_fz, &k_dens, &k_press, &k_particle_cell, &k_particle_index,
-			      &k_cell_start, &k_cell_end, &k_kin_energy, &k_type,
-			      &k_fx_wall, &k_fy_wall, &k_fz_wall, &k_walls_list,
-			      &k_walls_start, &k_colloids_list, &k_colloids_start,
-			      &k_coll_x, &k_coll_y, &k_coll_z,
-			      &k_coll_vx, &k_coll_vy, &k_coll_vz,
-			      &k_coll_omegax, &k_coll_omegay, &k_coll_omegaz,
-			      &k_coll_theta, &k_coll_quat0, &k_coll_quatx,
-			      &k_coll_quaty, &k_coll_quatz,
-			      &k_x_center, &k_y_center, &k_z_center,
-			      &k_fx_colloid, &k_fy_colloid, &k_fz_colloid,	
-			      &k_tx_colloid, &k_ty_colloid, &k_tz_colloid,
-			      &k_coll_cell, &k_coll_index,
-			      &k_coll_cell_start, &k_coll_cell_end,
-			      &k_magnetic_mom);
+  error = sys.copy_pointers_to_device(&k_x, &k_y, &k_z, &k_vx, &k_vy, &k_vz,
+				      &k_mass, &k_fx, &k_fy,
+				      &k_fz, &k_dens, &k_inv_dens,
+				      &k_press, &k_particle_cell, &k_particle_index,
+				      &k_cell_start, &k_cell_end, &k_kin_energy, &k_type,
+				      &k_Pixx_over_dens_sq, &k_Pixy_over_dens_sq,
+				      &k_Piyy_over_dens_sq, &k_Pixz_over_dens_sq,
+				      &k_Piyz_over_dens_sq, &k_Pizz_over_dens_sq,
+				      &k_cxx, &k_cxy, &k_cyy,
+				      &k_cxz, &k_cyz, &k_czz,
+				      &k_dcdt_xx, &k_dcdt_xy, &k_dcdt_yy,
+				      &k_dcdt_xz, &k_dcdt_yz, &k_dcdt_zz,
+				      &k_gradvxx, &k_gradvxy, &k_gradvxz,
+				      &k_gradvyx, &k_gradvyy, &k_gradvyz,
+				      &k_gradvzx, &k_gradvzy, &k_gradvzz,
+				      &k_fx_wall, &k_fy_wall, &k_fz_wall, &k_walls_list,
+				      &k_walls_start, &k_colloids_list, &k_colloids_start,
+				      &k_coll_x, &k_coll_y, &k_coll_z,
+				      &k_coll_vx, &k_coll_vy, &k_coll_vz,
+				      &k_coll_omegax, &k_coll_omegay, &k_coll_omegaz,
+				      &k_coll_theta, &k_coll_quat0, &k_coll_quatx,
+				      &k_coll_quaty, &k_coll_quatz,
+				      &k_x_center, &k_y_center, &k_z_center,
+				      &k_fx_colloid, &k_fy_colloid, &k_fz_colloid,	
+				      &k_tx_colloid, &k_ty_colloid, &k_tz_colloid,
+				      &k_coll_cell, &k_coll_index,
+				      &k_coll_cell_start, &k_coll_cell_end,
+				      &k_posf);
+  if (error != 0)
+    return 1; // End of program  
+  
 
   //------------------------------------  
   //--- Configure blocks and threads ---
@@ -255,16 +293,14 @@ int main() {
   cuda_err = cudaGetLastError();
   if (cuda_err != cudaSuccess) {
     printf("Error en kernel_print_constants: %s\n", cudaGetErrorString(cuda_err));
-    return;
+    return 1;
   }
 
   //----------------------------------------------------------  
   //--- Magnetic angle and magnetic moment are initialized ---
-  //----------------------------------------------------------
-  real angle_magnet = sys.omega_magnet * t_ini;  
+  //----------------------------------------------------------    
+  real angle_magnet = sys.omega_magnet * t_ini;
   real magnetic_mom[3] = {cos(angle_magnet), sin(angle_magnet), 0.0};
-  // The value of magnetic_mom is passed to the GPU
-  cudaMemcpy(k_magnetic_mom, magnetic_mom, 3 * sizeof(real), cudaMemcpyHostToDevice);
 
   //--------------------------------  
   //---- First Neighbour search ----
@@ -276,37 +312,49 @@ int main() {
 				k_coll_cell, k_coll_index,
 				k_coll_cell_start, k_coll_cell_end);
   if (error != 0)
-    return; // End of program  
+    return 1; // End of program  
 
   //-----------------------------------------------------------  
   //--- Particle forces are calculated in the initial state ---
   //-----------------------------------------------------------    
   //--- (needed for the Velocity Verlet algorithm) ---
   //--- Density and pressure are also calculated in this function
-  error = sys.calculate_forces(numBlocks, threadsPerBlock, k_x, k_y, k_z,
-			       k_vx, k_vy, k_vz,
-			       k_fx, k_fy, k_fz, k_press, k_dens,
+  error = sys.calculate_forces(numBlocks, threadsPerBlock,
+			       k_x, k_y, k_z, k_vx, k_vy, k_vz,
+			       k_cxx, k_cxy, k_cyy, k_cxz, k_cyz, k_czz,
+			       k_fx, k_fy, k_fz,
+			       k_dcdt_xx, k_dcdt_xy, k_dcdt_yy,
+			       k_dcdt_xz, k_dcdt_yz, k_dcdt_zz,
+			       k_gradvxx, k_gradvxy, k_gradvxz,
+			       k_gradvyx, k_gradvyy, k_gradvyz,
+			       k_gradvzx, k_gradvzy, k_gradvzz,
+			       k_press, k_dens, k_inv_dens,
 			       k_mass, k_particle_index,
 			       k_cell_start, k_cell_end, k_type,
+			       k_Pixx_over_dens_sq, k_Pixy_over_dens_sq,
+			       k_Piyy_over_dens_sq, k_Pixz_over_dens_sq,
+			       k_Piyz_over_dens_sq, k_Pizz_over_dens_sq,
 			       k_fx_wall, k_fy_wall, k_fz_wall,
-			       k_walls_list, k_walls_start,   
 			       k_coll_x, k_coll_y, k_coll_z,
 			       k_coll_vx, k_coll_vy, k_coll_vz,
 			       k_coll_omegax, k_coll_omegay, k_coll_omegaz,
 			       k_fx_colloid, k_fy_colloid, k_fz_colloid,
 			       k_tx_colloid, k_ty_colloid, k_tz_colloid,
 			       k_colloids_list, k_colloids_start, k_coll_index,
-			       k_coll_cell_start, k_coll_cell_end,
-			       k_magnetic_mom);
+			       k_coll_cell_start, k_coll_cell_end, k_posf,
+			       magnetic_mom);
   if (error != 0)
-    return;
+    return 1;
 
   //--------------------------------  
   //--- Initial state is printed ---
   //--------------------------------    
   sys.print_output(numBlocks, threadsPerBlock,
-		   k_x, k_y, k_z, k_vx, k_vy, k_vz, k_mass, k_type, k_dens, k_press,
+		   k_x, k_y, k_z, k_vx, k_vy, k_vz,
+		   k_fx, k_fy, k_fz, k_mass, k_type, k_dens, k_press,
+		   k_cxx, k_cxy, k_cyy, k_cxz, k_cyz, k_czz,
 		   k_fx_wall, k_fy_wall, k_fz_wall,
+		   k_walls_list, k_walls_start,
 		   k_coll_x, k_coll_y, k_coll_z,
 		   k_coll_vx, k_coll_vy, k_coll_vz,
 		   k_coll_omegax, k_coll_omegay, k_coll_omegaz,			 
@@ -325,7 +373,11 @@ int main() {
     //---- Particles are moved (part1 of the Velocity Verlet algorithm) ---
     error = sys.V_Verlet_step1(numBlocks, threadsPerBlock,
 			       k_x, k_y, k_z, k_vx, k_vy, k_vz,
-			       k_fx, k_fy, k_fz, k_mass, k_type,
+			       k_cxx, k_cxy, k_cyy, k_cxz, k_cyz, k_czz,
+			       k_fx, k_fy, k_fz,
+			       k_dcdt_xx, k_dcdt_xy, k_dcdt_yy,
+			       k_dcdt_xz, k_dcdt_yz, k_dcdt_zz,
+			       k_mass, k_type,
 			       k_coll_x, k_coll_y, k_coll_z,
 			       k_coll_vx, k_coll_vy, k_coll_vz,
 			       k_coll_omegax, k_coll_omegay, k_coll_omegaz,
@@ -336,7 +388,7 @@ int main() {
 			       k_x_center, k_y_center, k_z_center,
 			       k_colloids_list, k_colloids_start, coll_move);
     if (error != 0)
-      return; // End of program
+      return 1; // End of program
 
     //---- Neighbour search ----
     start_neighbours = clock();    
@@ -350,65 +402,87 @@ int main() {
     time_neighbours = time_neighbours +
       (double)(end_neighbours - start_neighbours) / CLOCKS_PER_SEC;    
     if (error != 0)
-      return; // End of program
+      return 1; // End of program
 
     //--- Magnetic angle and magnetic moment are calculated ---
-    angle_magnet    = sys.omega_magnet * (t_ini + delta_t * (double)(step));    
+    angle_magnet    = sys.omega_magnet * (t_ini + delta_t * (double)(step));
     magnetic_mom[0] = cos(angle_magnet);
     magnetic_mom[1] = sin(angle_magnet);
     magnetic_mom[2] = 0.0;
-    // magnetic_mom value is passed to the GPU
-    cudaMemcpy(k_magnetic_mom, magnetic_mom, 3 * sizeof(real), cudaMemcpyHostToDevice);
 
     //----- Forces are calculated ----
     start_forces = clock();            
-    error = sys.calculate_forces(numBlocks, threadsPerBlock, k_x, k_y, k_z, k_vx, k_vy, k_vz,
-				 k_fx, k_fy, k_fz, k_press, k_dens,
+    error = sys.calculate_forces(numBlocks, threadsPerBlock,
+				 k_x, k_y, k_z, k_vx, k_vy, k_vz,
+				 k_cxx, k_cxy, k_cyy, k_cxz, k_cyz, k_czz,
+				 k_fx, k_fy, k_fz,
+				 k_dcdt_xx, k_dcdt_xy, k_dcdt_yy,
+				 k_dcdt_xz, k_dcdt_yz, k_dcdt_zz,
+				 k_gradvxx, k_gradvxy, k_gradvxz,
+				 k_gradvyx, k_gradvyy, k_gradvyz,
+				 k_gradvzx, k_gradvzy, k_gradvzz,
+				 k_press, k_dens, k_inv_dens,
 				 k_mass, k_particle_index,
 				 k_cell_start, k_cell_end, k_type,
+				 k_Pixx_over_dens_sq, k_Pixy_over_dens_sq,
+				 k_Piyy_over_dens_sq, k_Pixz_over_dens_sq,
+				 k_Piyz_over_dens_sq, k_Pizz_over_dens_sq,
 				 k_fx_wall, k_fy_wall, k_fz_wall,
-				 k_walls_list, k_walls_start,   
 				 k_coll_x, k_coll_y, k_coll_z,
 				 k_coll_vx, k_coll_vy, k_coll_vz,
 				 k_coll_omegax, k_coll_omegay, k_coll_omegaz,
 				 k_fx_colloid, k_fy_colloid, k_fz_colloid,
 				 k_tx_colloid, k_ty_colloid, k_tz_colloid,
 				 k_colloids_list, k_colloids_start, k_coll_index,
-				 k_coll_cell_start, k_coll_cell_end,
-				 k_magnetic_mom);
+				 k_coll_cell_start, k_coll_cell_end, k_posf,
+				 magnetic_mom);
     end_forces = clock();
     time_forces = time_forces + (double)(end_forces - start_forces) / CLOCKS_PER_SEC;  
     if (error != 0)
-      return; // End of program                
+      return 1; // End of program                
     
     //---- Particles are moved (part2 of the Velocity Verlet algorithm) ----
     error = sys.V_Verlet_step2(numBlocks, threadsPerBlock,
 			       k_vx, k_vy, k_vz,
-			       k_fx, k_fy, k_fz, k_mass, k_type,
+			       k_cxx, k_cxy, k_cyy, k_cxz, k_cyz, k_czz,
+			       k_fx, k_fy, k_fz,
+			       k_dcdt_xx, k_dcdt_xy, k_dcdt_yy,
+			       k_dcdt_xz, k_dcdt_yz, k_dcdt_zz,
+			       k_mass, k_type,
 			       k_coll_vx, k_coll_vy, k_coll_vz,
 			       k_coll_omegax, k_coll_omegay, k_coll_omegaz,
 			       k_fx_colloid, k_fy_colloid, k_fz_colloid,
 			       k_tx_colloid, k_ty_colloid, k_tz_colloid,
 			       coll_move);
     if (error != 0)
-      return; // End of program                    
+      return 1; // End of program                    
 
     //--- Output is written in output files ---
     sys.print_output(numBlocks, threadsPerBlock,
-		     k_x, k_y, k_z, k_vx, k_vy, k_vz, k_mass, k_type, k_dens, k_press,
+		     k_x, k_y, k_z, k_vx, k_vy, k_vz,
+		     k_fx, k_fy, k_fz, k_mass, k_type, k_dens, k_press,
+		     k_cxx, k_cxy, k_cyy, k_cxz, k_cyz, k_czz,
 		     k_fx_wall, k_fy_wall, k_fz_wall,
+		     k_walls_list, k_walls_start,
 		     k_coll_x, k_coll_y, k_coll_z,
 		     k_coll_vx, k_coll_vy, k_coll_vz,
 		     k_coll_omegax, k_coll_omegay, k_coll_omegaz,			 
 		     k_fx_colloid, k_fy_colloid, k_fz_colloid,
 		     k_tx_colloid, k_ty_colloid, k_tz_colloid,
 		     k_kin_energy, freq_micro, freq_walls, freq_colloids,
-		     freq_macro, step); 
+		     freq_macro, step);
+    // if (step % freq_micro == 0)
+    //   sys.print_particles_gradv(k_x, k_y, k_z,
+    // 				k_gradvxx, k_gradvxy, k_gradvxz,
+    // 				k_gradvyx, k_gradvyy, k_gradvyz,
+    // 				k_gradvzx, k_gradvzy, k_gradvzz,
+    // 				step);
+				
   }  //--------- End of main loop ------------
 
   //---------------------------------------
   //---- Computation time is displayed ----
-  //---------------------------------------  
+  //---------------------------------------
   clock_t end = clock();
   double time_spent = (double)(end - start) / CLOCKS_PER_SEC;
   printf("Total time: %f seconds\n", time_spent);
@@ -428,13 +502,42 @@ int main() {
   cudaFree(k_fx);
   cudaFree(k_fy);
   cudaFree(k_fz);
+  cudaFree(k_cxx);
+  cudaFree(k_cxy);
+  cudaFree(k_cyy);
+  cudaFree(k_cxz);
+  cudaFree(k_cyz);
+  cudaFree(k_czz);
+  cudaFree(k_dcdt_xx);
+  cudaFree(k_dcdt_xy);
+  cudaFree(k_dcdt_yy);
+  cudaFree(k_dcdt_xz);
+  cudaFree(k_dcdt_yz);
+  cudaFree(k_dcdt_zz);  
+  cudaFree(k_gradvxx);
+  cudaFree(k_gradvxy);
+  cudaFree(k_gradvxz);
+  cudaFree(k_gradvyx);
+  cudaFree(k_gradvyy);
+  cudaFree(k_gradvyz);
+  cudaFree(k_gradvzx);
+  cudaFree(k_gradvzy);
+  cudaFree(k_gradvzz);        
   cudaFree(k_dens);
+  cudaFree(k_inv_dens);  
   cudaFree(k_press);
   cudaFree(k_particle_cell);
   cudaFree(k_particle_index);
   cudaFree(k_cell_start);
   cudaFree(k_cell_end);
   cudaFree(k_type);
+  cudaFree(k_Pixx_over_dens_sq);
+  cudaFree(k_Pixy_over_dens_sq);
+  cudaFree(k_Piyy_over_dens_sq);
+  cudaFree(k_Pixz_over_dens_sq);
+  cudaFree(k_Piyz_over_dens_sq);
+  cudaFree(k_Pizz_over_dens_sq);
+  cudaFree(k_posf);
   if (sys.wall) {
     cudaFree(k_fx_wall);
     cudaFree(k_fy_wall);
@@ -467,7 +570,6 @@ int main() {
     cudaFree(k_coll_index);
     cudaFree(k_coll_cell_start);
     cudaFree(k_coll_cell_end);
-    cudaFree(k_magnetic_mom);
   }
   cudaDeviceReset();      
 
@@ -479,14 +581,12 @@ int main() {
   return 0;
 }  //-------------- End of main ------------------
 
-
-
-
-
+//-----------------------------------------------
+//-----------------------------------------------
 //-----------------------------------------------
 //----  Function  to print variables of main ----
 __host__ void print_main_vars(real delta_t,
-			      real t_ini,			      
+			      real t_ini,
 			      int  Nsteps,
 			      int  freq_micro,
 			      int  freq_macro,
@@ -495,24 +595,24 @@ __host__ void print_main_vars(real delta_t,
 			      int  new_sim,
 			      int  coll_move,
 			      int  N_coll) {
-  
+
   std::cout << "--- Main variables ----\n";
   std::cout << "Time step                 = " << delta_t  << "\n";
-  std::cout << "Initial time              = " << t_ini  << "\n";    
+  std::cout << "Initial time              = " << t_ini  << "\n";  
   std::cout << "Number of steps           = " << Nsteps  << "\n";
   std::cout << "Output frequency micro    = " << freq_micro  << "\n";
   std::cout << "Output frequency macro    = " << freq_macro  << "\n";
   std::cout << "Output frequency walls    = " << freq_walls  << "\n";
   std::cout << "Output frequency colloids = " << freq_colloids  << "\n";
   if (new_sim == 0)
-    std::cout << "New simulation?           = Yes\n";
+    std::cout << "New simulation?           = No\n";
   else
-    std::cout << "New simulation?           = No\n";    
+    std::cout << "New simulation?           = Yes\n";    
   if (N_coll > 0)
     if (coll_move == 0) 
-      std::cout << "Are colloids moving?      = Yes\n";
-    else
       std::cout << "Are colloids moving?      = No\n";
+    else
+      std::cout << "Are colloids moving?      = Yes\n";
   std::cout << "coll_move                 = " << coll_move << "\n";
   std::cout << "-----------------------\n";  
 

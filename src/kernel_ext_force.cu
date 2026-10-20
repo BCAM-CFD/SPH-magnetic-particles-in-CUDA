@@ -1,7 +1,8 @@
 /******************************************************
-This code has been developed by Adolfo Vazquez-Quesada,
-from the Department of Fundamental Physics at UNED, in
-Madrid, Spain.
+This code has been developed by:
+Adolfo Vazquez-Quesada (1) and Jose Manuel Moreno Valderrama (2)
+(1) Department of Fundamental Physics at UNED, Madrid, Spain
+(2) Remedy Entertainment
 email: a.vazquez-quesada@fisfun.uned.es
 ********************************************************/
 
@@ -67,7 +68,7 @@ __global__ void kernel_ext_force(real* __restrict__ x,
       fy[i] += fi[1];
       if (dim == 3)
 	fz[i] += fi[2];
-    }        
+    }
     
   }
 }

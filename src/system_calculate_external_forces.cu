@@ -1,7 +1,8 @@
 /******************************************************
-This code has been developed by Adolfo Vazquez-Quesada,
-from the Department of Fundamental Physics at UNED, in
-Madrid, Spain.
+This code has been developed by:
+Adolfo Vazquez-Quesada (1) and Jose Manuel Moreno Valderrama (2)
+(1) Department of Fundamental Physics at UNED, Madrid, Spain
+(2) Remedy Entertainment
 email: a.vazquez-quesada@fisfun.uned.es
 ********************************************************/
 
@@ -30,7 +31,7 @@ int class_system::calculate_external_forces(dim3 numBlocks,
     printf("Error in kernel_ext_force: %s\n", cudaGetErrorString(cuda_err));
     return 1;
   }  	
-  cudaDeviceSynchronize();  // We require the kernel to end to continue
+  // cudaDeviceSynchronize();  // We require the kernel to end to continue
   
   return 0;
   

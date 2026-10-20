@@ -1,7 +1,8 @@
 /******************************************************
-This code has been developed by Adolfo Vazquez-Quesada,
-from the Department of Fundamental Physics at UNED, in
-Madrid, Spain.
+This code has been developed by:
+Adolfo Vazquez-Quesada (1) and Jose Manuel Moreno Valderrama (2)
+(1) Department of Fundamental Physics at UNED, Madrid, Spain
+(2) Remedy Entertainment
 email: a.vazquez-quesada@fisfun.uned.es
 ********************************************************/
 
@@ -19,9 +20,21 @@ int class_system::V_Verlet_step1(dim3 numBlocks,
 				 real* k_vx,
 				 real* k_vy,
 				 real* k_vz,
+				 real* k_cxx,
+				 real* k_cxy,
+				 real* k_cyy,
+				 real* k_cxz,
+				 real* k_cyz,
+				 real* k_czz,				 
 				 real* k_fx,
 				 real* k_fy,
 				 real* k_fz,
+				 real* k_dcdt_xx,
+				 real* k_dcdt_xy,
+				 real* k_dcdt_yy,
+				 real* k_dcdt_xz,
+				 real* k_dcdt_yz,
+				 real* k_dcdt_zz,
 				 real* k_mass,
 				 int*  k_type,
 				 real* k_coll_x,
@@ -54,8 +67,15 @@ int class_system::V_Verlet_step1(dim3 numBlocks,
   cudaError_t cuda_err;
 
   //--- Fluid and walls particles are moved ---  
-  kernel_move_sys_VV_part1<<<numBlocks, threadsPerBlock>>>(k_x, k_y, k_z, k_vx, k_vy, k_vz,
-							   k_fx, k_fy, k_fz, k_mass, k_type);
+  kernel_move_sys_VV_part1<<<numBlocks, threadsPerBlock>>>(k_x, k_y, k_z,
+							   k_vx, k_vy, k_vz,
+							   k_cxx, k_cxy, k_cyy,
+							   k_cxz, k_cyz, k_czz,
+							   k_fx, k_fy, k_fz,
+							   k_dcdt_xx, k_dcdt_xy,
+							   k_dcdt_yy, k_dcdt_xz,
+							   k_dcdt_yz, k_dcdt_zz,
+							   k_mass, k_type);
   cuda_err = cudaGetLastError();
   if (cuda_err != cudaSuccess) {
     printf("Error in kernel_move_sys: %s\n", cudaGetErrorString(cuda_err));
@@ -63,8 +83,8 @@ int class_system::V_Verlet_step1(dim3 numBlocks,
   }
 
   //--- Particles of colloids are moved ---
-  if (N_colloids > 0)
-    if (coll_move == 0) {
+  if (N_colloids > 0) {
+    if (coll_move == 1)
       kernel_move_colloids_VV_part1<<<numBlocks, threadsPerBlock>>>(k_coll_x, k_coll_y,
 								    k_coll_z, k_coll_vx,
 								    k_coll_vy, k_coll_vz,
@@ -88,14 +108,14 @@ int class_system::V_Verlet_step1(dim3 numBlocks,
 								    k_z_center,
 								    k_colloids_list,
 								    k_colloids_start);
-      cuda_err = cudaGetLastError();
-      if (cuda_err != cudaSuccess) {
-	printf("Error in kernel_colloids_VV_part1: %s\n", cudaGetErrorString(cuda_err));
-	return 1;
-      }
+    cuda_err = cudaGetLastError();
+    if (cuda_err != cudaSuccess) {
+      printf("Error in kernel_colloids_VV_part1: %s\n", cudaGetErrorString(cuda_err));
+      return 1;
+    }
   }
   
-  cudaDeviceSynchronize();  // We require the kernel to end to continue    
+  // cudaDeviceSynchronize();  // We require the kernel to end to continue    
 
   return 0;
 

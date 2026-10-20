@@ -1,7 +1,8 @@
 /******************************************************
-This code has been developed by Adolfo Vazquez-Quesada,
-from the Department of Fundamental Physics at UNED, in
-Madrid, Spain.
+This code has been developed by:
+Adolfo Vazquez-Quesada (1) and Jose Manuel Moreno Valderrama (2)
+(1) Department of Fundamental Physics at UNED, Madrid, Spain
+(2) Remedy Entertainment
 email: a.vazquez-quesada@fisfun.uned.es
 ********************************************************/
 
@@ -20,21 +21,47 @@ int class_system::calculate_forces(dim3 numBlocks,
 				   real* k_vx,
 				   real* k_vy,
 				   real* k_vz,
+				   real* k_cxx,
+				   real* k_cxy,
+				   real* k_cyy,
+				   real* k_cxz,
+				   real* k_cyz,
+				   real* k_czz,				   
 				   real* k_fx,
 				   real* k_fy,
 				   real* k_fz,
+				   real* k_dcdt_xx,
+				   real* k_dcdt_xy,
+				   real* k_dcdt_yy,
+				   real* k_dcdt_xz,
+				   real* k_dcdt_yz,
+				   real* k_dcdt_zz,				   
+				   real* k_gradvxx,
+				   real* k_gradvxy,
+				   real* k_gradvxz,
+				   real* k_gradvyx,
+				   real* k_gradvyy,
+				   real* k_gradvyz,
+				   real* k_gradvzx,
+				   real* k_gradvzy,
+				   real* k_gradvzz,
 				   real* k_press,
 				   real* k_dens,
+				   real* k_inv_dens,				   
 				   real* k_mass,				    
 				   int*  k_particle_index,
 				   int*  k_cell_start,
 				   int*  k_cell_end,
 				   int*  k_type,
+				   real* k_Pixx_over_dens_sq,
+				   real* k_Pixy_over_dens_sq,
+				   real* k_Piyy_over_dens_sq,
+				   real* k_Pixz_over_dens_sq,
+				   real* k_Piyz_over_dens_sq,
+				   real* k_Pizz_over_dens_sq,				   
 				   real* k_fx_wall,
 				   real* k_fy_wall,
 				   real* k_fz_wall,
-				   int*  k_walls_list,
-				   int*  k_walls_start,				   
 				   real* k_coll_x,
 				   real* k_coll_y,
 				   real* k_coll_z,
@@ -55,41 +82,55 @@ int class_system::calculate_forces(dim3 numBlocks,
 				   int*  k_coll_index,
 				   int*  k_coll_cell_start,
 				   int*  k_coll_cell_end,
-				   real* k_magnetic_mom) {
+				   float4* k_posf,
+				   const real magnetic_mom[3]) {
 
   cudaError_t cuda_err;
   int error;
 
+  //---- Positions in float ----
+  kernel_build_posf<<<numBlocks, threadsPerBlock>>>(k_x, k_y, k_z, k_type, k_particle_index, k_posf);
+
   //---- Densities are calculated ----
   error = calculate_density(numBlocks, threadsPerBlock, k_x, k_y, k_z, k_dens,
-		    k_particle_index, k_cell_start, k_cell_end);
+			    k_inv_dens, k_particle_index, k_cell_start, k_cell_end, k_posf);
   if (error != 0)
     return 1;
 
   //---- Pressure is calculated ----
-  error = calculate_pressure(numBlocks, threadsPerBlock, k_press, k_dens, k_mass);
+  error = calculate_pressure(numBlocks, threadsPerBlock, k_press,
+			     k_dens, k_mass, k_inv_dens,
+			     k_cxx, k_cxy, k_cyy, k_cxz, k_cyz, k_czz,
+			     k_Pixx_over_dens_sq, k_Pixy_over_dens_sq,
+			     k_Piyy_over_dens_sq, k_Pixz_over_dens_sq,
+			     k_Piyz_over_dens_sq, k_Pizz_over_dens_sq);
   if (error != 0)
     return 1;  
   
-  // Interparticle forces are set to zero
-  kernel_forces_to_zero<<<numBlocks, threadsPerBlock>>>(k_fx, k_fy, k_fz);
-  cudaDeviceSynchronize();  // We require the kernel to end to continue
-    
   // forces are calculated
-  kernel_forces<<<numBlocks, threadsPerBlock>>>(k_x, k_y, k_z, k_vx, k_vy, k_vz,
-						k_fx, k_fy, k_fz, k_press, k_dens,
-						k_mass, k_particle_index,
-						k_cell_start, k_cell_end,
-						k_type,
-						k_coll_x, k_coll_y, k_coll_z,
-						k_coll_vx, k_coll_vy, k_coll_vz,
-						k_coll_omegax, k_coll_omegay, k_coll_omegaz);
+  kernel_forces_and_vel_gradients<<<numBlocks, threadsPerBlock>>>(k_x, k_y, k_z, k_vx, k_vy, k_vz,
+								  k_fx, k_fy, k_fz,
+								  k_gradvxx, k_gradvxy, k_gradvxz,
+								  k_gradvyx, k_gradvyy, k_gradvyz,
+								  k_gradvzx, k_gradvzy, k_gradvzz,
+								  k_inv_dens, k_particle_index,
+								  k_cell_start, k_cell_end, k_type,
+								  k_Pixx_over_dens_sq,
+								  k_Pixy_over_dens_sq,
+								  k_Piyy_over_dens_sq,
+								  k_Pixz_over_dens_sq,
+								  k_Piyz_over_dens_sq,
+								  k_Pizz_over_dens_sq,
+								  k_coll_x, k_coll_y, k_coll_z,
+								  k_coll_vx, k_coll_vy, k_coll_vz,
+								  k_coll_omegax, k_coll_omegay,
+								  k_coll_omegaz, k_posf);
   cuda_err = cudaGetLastError();
   if (cuda_err != cudaSuccess) {
     printf("Error in kernel_forces: %s\n", cudaGetErrorString(cuda_err));
     return 1;
   }    
-  cudaDeviceSynchronize();  // We require the kernel to end to continue
+  // cudaDeviceSynchronize();  // We require the kernel to end to continue
 
   //---- External forces are calculated ----
   if (ext_force_type != 0) {
@@ -100,14 +141,15 @@ int class_system::calculate_forces(dim3 numBlocks,
       return 1; // End of program
   }
 
-  //---- Forces on walls are calculated ----
-  if (wall) {
-    error = calculate_force_walls(numBlocks, threadsPerBlock,
-				  k_fx_wall, k_fy_wall, k_fz_wall,
-				  k_fx, k_fy, k_fz, k_walls_list, k_walls_start);
-    if (error != 0)
-      return 1; // End of program
-  }
+  //----- Derivative of conformation tensor respect to time is calculated -----
+  kernel_dcdt<<<numBlocks, threadsPerBlock>>>(k_dcdt_xx, k_dcdt_xy, k_dcdt_yy,
+						k_dcdt_xz, k_dcdt_yz, k_dcdt_zz,
+						k_cxx, k_cxy, k_cyy, k_cxz, k_cyz, k_czz,
+						k_gradvxx, k_gradvxy, k_gradvxz,
+						k_gradvyx, k_gradvyy, k_gradvyz,
+						k_gradvzx, k_gradvzy, k_gradvzz, k_type);
+
+  //---- Right now, forces on walls are not calculated here, but at system_print_output----
   
   //---- Forces and torques on colloids are calculated ----
   if (N_colloids > 0) {
@@ -118,7 +160,7 @@ int class_system::calculate_forces(dim3 numBlocks,
 				     k_x, k_y, k_z, k_fx, k_fy, k_fz,
 				     k_colloids_list, k_colloids_start,
 				     k_coll_index, k_coll_cell_start, k_coll_cell_end,
-				     k_magnetic_mom);
+				     magnetic_mom);
     if (error != 0)
       return 1; // End of program
   }  

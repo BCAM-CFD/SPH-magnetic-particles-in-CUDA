@@ -1,3 +1,10 @@
+/******************************************************
+This code has been developed by:
+Adolfo Vazquez-Quesada (1) and Jose Manuel Moreno Valderrama (2)
+(1) Department of Fundamental Physics at UNED, Madrid, Spain
+(2) Remedy Entertainment
+email: a.vazquez-quesada@fisfun.uned.es
+********************************************************/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,6 +26,9 @@ int class_system::read_input(int   N[3],
 			     real& P0,
 			     real& eta,
 			     real& zeta,
+			     real& np,
+			     real& kT,
+			     real& elast_time,			     
 			     int&  ext_force_type,
 			     real  ext_force[3],
 			     int&  freq_micro,
@@ -46,7 +56,7 @@ int class_system::read_input(int   N[3],
   
   FILE *file = fopen("input", "r");
   if (!file) {
-    perror("Opening file error");                
+    perror("Opening file error");    
     return 0;
   }
 
@@ -64,6 +74,9 @@ int class_system::read_input(int   N[3],
   int P0_read              = 1;
   int eta_read             = 1;
   int zeta_read            = 1;
+  int np_read              = 1;
+  int kT_read              = 1;
+  int elast_time_read      = 1;    
   int ext_force_type_read  = 1;    
   int ext_force_read       = 1;
   int freq_micro_read      = 1;
@@ -82,7 +95,7 @@ int class_system::read_input(int   N[3],
   int tau_repulsion_read   = 1;
   int cutoff_magnetic_read = 1;
   int F0_magnetic_read     = 1;
-  int omega_magnetic_read  = 1;    
+  int omega_magnetic_read  = 1;      
   int new_sim_read         = 1;    
     
   while (fgets(line, sizeof(line), file)) {
@@ -123,7 +136,7 @@ int class_system::read_input(int   N[3],
     } else if (strcmp(var, "dim") == 0 && count >= 2) {
       dim                  = (int)val1;
       dim_read             = 0;
-    } else if (strcmp(var, "dt") == 0 && count >= 2) {
+    }  else if (strcmp(var, "dt") == 0 && count >= 2) {
       dt                   = val1;
       dt_read              = 0;
     } else if (strcmp(var, "t0") == 0 && count >= 2) {
@@ -150,6 +163,15 @@ int class_system::read_input(int   N[3],
     } else if (strcmp(var, "zeta") == 0 && count >= 2) {
       zeta                 = val1;
       zeta_read            = 0;
+    } else if (strcmp(var, "np") == 0 && count >= 2) {
+      np                   = val1;
+      np_read              = 0;
+    } else if (strcmp(var, "kT") == 0 && count >= 2) {
+      kT                   = val1;
+      kT_read              = 0;
+    } else if (strcmp(var, "tau") == 0 && count >= 2) {
+      elast_time           = val1;
+      elast_time_read      = 0;         
     } else if (strcmp(var, "ext_force_type") == 0 && count >= 2) {
       ext_force_type       = (int)val1;
       ext_force_type_read  = 0;	  
@@ -214,7 +236,7 @@ int class_system::read_input(int   N[3],
       F0_magnetic_read     = 0;
     } else if (strcmp(var, "omega_magnetic") == 0 && count >= 2) {
       omega_magnetic       = val1;
-      omega_magnetic_read  = 0;                                          
+      omega_magnetic_read  = 0;                                                      
     } else if (strcmp(var, "new_sim") == 0 && count >= 2) {
       new_sim              = val1;
       new_sim_read         = 0;            
@@ -294,6 +316,18 @@ int class_system::read_input(int   N[3],
     printf("system_read_input error: zeta was not read\n");
     return 1;
   }
+  if (np_read == 1)  {
+    printf("system_read_input error: np was not read\n");
+    return 1;
+  }
+  if (kT_read == 1)  {
+    printf("system_read_input error: kT was not read\n");
+    return 1;
+  }
+  if (elast_time_read == 1)  {
+    printf("system_read_input error: tau was not read\n");
+    return 1;
+  }    
   if (ext_force_type_read == 1)  {
     printf("system_read_input error: ext_force_type was not read\n");
     return 1;

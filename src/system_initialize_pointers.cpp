@@ -1,7 +1,8 @@
 /******************************************************
-This code has been developed by Adolfo Vazquez-Quesada,
-from the Department of Fundamental Physics at UNED, in
-Madrid, Spain.
+This code has been developed by:
+Adolfo Vazquez-Quesada (1) and Jose Manuel Moreno Valderrama (2)
+(1) Department of Fundamental Physics at UNED, Madrid, Spain
+(2) Remedy Entertainment
 email: a.vazquez-quesada@fisfun.uned.es
 ********************************************************/
 
@@ -48,6 +49,12 @@ void class_system::initialize_pointers() {
   press       = nullptr;
   mass        = nullptr;
   type        = nullptr;
+  cxx_tensor  = nullptr;
+  cxy_tensor  = nullptr;
+  cyy_tensor  = nullptr;
+  cxz_tensor  = nullptr;
+  cyz_tensor  = nullptr;
+  czz_tensor  = nullptr;  
 
   walls_start    = nullptr;
   walls_list     = nullptr;

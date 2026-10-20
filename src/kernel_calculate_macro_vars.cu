@@ -1,7 +1,8 @@
 /******************************************************
-This code has been developed by Adolfo Vazquez-Quesada,
-from the Department of Fundamental Physics at UNED, in
-Madrid, Spain.
+This code has been developed by:
+Adolfo Vazquez-Quesada (1) and Jose Manuel Moreno Valderrama (2)
+(1) Department of Fundamental Physics at UNED, Madrid, Spain
+(2) Remedy Entertainment
 email: a.vazquez-quesada@fisfun.uned.es
 ********************************************************/
 
@@ -50,5 +51,5 @@ __global__ void kernel_calculate_macro_vars(real* __restrict__ mass,
   // old GPUs (< 6.0) -> use CAS emulation
   atomicAdd_double_emulated(kin_energy, part_sum);
 #endif
-  
+
 }

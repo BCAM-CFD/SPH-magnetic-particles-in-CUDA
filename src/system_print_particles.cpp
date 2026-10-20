@@ -1,7 +1,8 @@
 /******************************************************
-This code has been developed by Adolfo Vazquez-Quesada,
-from the Department of Fundamental Physics at UNED, in
-Madrid, Spain.
+This code has been developed by:
+Adolfo Vazquez-Quesada (1) and Jose Manuel Moreno Valderrama (2)
+(1) Department of Fundamental Physics at UNED, Madrid, Spain
+(2) Remedy Entertainment
 email: a.vazquez-quesada@fisfun.uned.es
 ********************************************************/
 
@@ -18,7 +19,13 @@ void class_system::print_particles(real* k_x,
 				   real* k_vz,
 				   real* k_mass,				   
 				   real* k_dens,
-				   real* k_press,				   
+				   real* k_press,
+				   real* k_cxx,
+				   real* k_cxy,
+				   real* k_cyy,
+				   real* k_cxz,
+				   real* k_cyz,
+				   real* k_czz,
 				   int step) {
   int Npart = this->N;
 
@@ -41,9 +48,15 @@ void class_system::print_particles(real* k_x,
   cudaMemcpy(this->mass,  k_mass,  Npart * sizeof(real), cudaMemcpyDeviceToHost);  
   cudaMemcpy(this->dens,  k_dens,  Npart * sizeof(real), cudaMemcpyDeviceToHost);
   cudaMemcpy(this->press, k_press, Npart * sizeof(real), cudaMemcpyDeviceToHost);
+  cudaMemcpy(this->cxx_tensor, k_cxx, Npart * sizeof(real), cudaMemcpyDeviceToHost);
+  cudaMemcpy(this->cxy_tensor, k_cxy, Npart * sizeof(real), cudaMemcpyDeviceToHost);
+  cudaMemcpy(this->cyy_tensor, k_cyy, Npart * sizeof(real), cudaMemcpyDeviceToHost);
+  cudaMemcpy(this->cxz_tensor, k_cxz, Npart * sizeof(real), cudaMemcpyDeviceToHost);
+  cudaMemcpy(this->cyz_tensor, k_cyz, Npart * sizeof(real), cudaMemcpyDeviceToHost);
+  cudaMemcpy(this->czz_tensor, k_czz, Npart * sizeof(real), cudaMemcpyDeviceToHost);    
   if (dim == 2)
     for (int i = 0; i < Npart; ++i)
-      fprintf(file, "%d " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT " %d\n",
+      fprintf(file, "%d " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT  " %d " REAL_FMT " " REAL_FMT " " REAL_FMT " \n",
 	      i,
 	      this->x[i],
 	      this->y[i],
@@ -52,10 +65,13 @@ void class_system::print_particles(real* k_x,
 	      this->mass[i],	      
 	      this->dens[i],
 	      this->press[i],
-	      this->type[i]);
+	      this->type[i],
+	      this->cxx_tensor[i],
+	      this->cxy_tensor[i],
+	      this->cyy_tensor[i]);
   else //--- dim == 3  ---
     for (int i = 0; i < Npart; ++i)
-      fprintf(file, "%d " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT " %d\n",
+      fprintf(file, "%d " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT " %d " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT " " REAL_FMT "\n",
 	      i,
 	      this->x[i],
 	      this->y[i],
@@ -66,7 +82,13 @@ void class_system::print_particles(real* k_x,
 	      this->mass[i],	      
 	      this->dens[i],
 	      this->press[i],
-	      this->type[i]);    
+	      this->type[i],
+	      this->cxx_tensor[i],
+	      this->cxy_tensor[i],
+	      this->cyy_tensor[i],
+	      this->cxz_tensor[i],
+	      this->cyz_tensor[i],
+	      this->czz_tensor[i]);    
   fclose(file);
 
   printf("Micro file written. Time step %d\n", step);

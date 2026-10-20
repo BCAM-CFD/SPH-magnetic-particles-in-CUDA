@@ -1,7 +1,8 @@
 /******************************************************
-This code has been developed by Adolfo Vazquez-Quesada,
-from the Department of Fundamental Physics at UNED, in
-Madrid, Spain.
+This code has been developed by:
+Adolfo Vazquez-Quesada (1) and Jose Manuel Moreno Valderrama (2)
+(1) Department of Fundamental Physics at UNED, Madrid, Spain
+(2) Remedy Entertainment
 email: a.vazquez-quesada@fisfun.uned.es
 ********************************************************/
 
@@ -57,7 +58,7 @@ void class_system::constructor(int Nxyz[3],
 
   // If the particles are read from a file, these quantities are
   // constructed ar system_initialize_particles_old_sim
-  if (new_sim == 0) {
+  if (new_sim == 1) {
     //-- Walls are perpendicular to the y direction --
     int Ny;
     int extra_N_wall = 2*ceil(overlap);
@@ -95,6 +96,13 @@ void class_system::constructor(int Nxyz[3],
     mass  = new real[Nmax];
     
     type  = new int[Nmax];
+
+    cxx_tensor = new real[Nmax];
+    cxy_tensor = new real[Nmax];
+    cyy_tensor = new real[Nmax];
+    cxz_tensor = new real[Nmax];
+    cyz_tensor = new real[Nmax];
+    czz_tensor = new real[Nmax];    
   }
 
 }

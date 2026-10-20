@@ -1,7 +1,8 @@
 /******************************************************
-This code has been developed by Adolfo Vazquez-Quesada,
-from the Department of Fundamental Physics at UNED, in
-Madrid, Spain.
+This code has been developed by:
+Adolfo Vazquez-Quesada (1) and Jose Manuel Moreno Valderrama (2)
+(1) Department of Fundamental Physics at UNED, Madrid, Spain
+(2) Remedy Entertainment
 email: a.vazquez-quesada@fisfun.uned.es
 ********************************************************/
 
@@ -10,15 +11,19 @@ email: a.vazquez-quesada@fisfun.uned.es
 __constant__ int N;
 __constant__ int dim;
 __constant__ real L[3];
+__constant__ float Lf[3];
 __constant__ real cw;
 __constant__ real c_gradw;
 __constant__ real rcut;
 __constant__ real rcutsq;
+__constant__ float rcutsq_f;
 __constant__ real rcut_inv;
 __constant__ real csq;
 __constant__ real rho0;
 __constant__ real a;
 __constant__ real b;
+__constant__ real nkT;
+__constant__ real tau;
 __constant__ real dt;
 __constant__ real cell_size[3];
 __constant__ int Ncells[3];

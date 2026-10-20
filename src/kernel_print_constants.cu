@@ -1,7 +1,8 @@
 /******************************************************
-This code has been developed by Adolfo Vazquez-Quesada,
-from the Department of Fundamental Physics at UNED, in
-Madrid, Spain.
+This code has been developed by:
+Adolfo Vazquez-Quesada (1) and Jose Manuel Moreno Valderrama (2)
+(1) Department of Fundamental Physics at UNED, Madrid, Spain
+(2) Remedy Entertainment
 email: a.vazquez-quesada@fisfun.uned.es
 ********************************************************/
 
@@ -27,6 +28,8 @@ __global__ void kernel_print_constants() {
     printf("Reference density, rho0           = " REAL_FMT " \n", rho0);
     printf("Transport coefficient a, a        = " REAL_FMT " \n", a);
     printf("Transport coefficient b, b        = " REAL_FMT " \n", b);
+    printf("np * k * T (Oldroyd-B model)      = " REAL_FMT " \n", nkT);
+    printf("relaxation time tau (Oldroyd-B model) = " REAL_FMT " \n", tau);        
     printf("Time step, dt                     = " REAL_FMT " \n", dt);
     printf("Cell size                         = " REAL_FMT " " REAL_FMT " " REAL_FMT " \n", cell_size[0], cell_size[1], cell_size[2]);
     printf("Number of cells                   = %d %d %d \n", Ncells[0], Ncells[1], Ncells[2]);
@@ -53,7 +56,7 @@ __global__ void kernel_print_constants() {
       printf("Colloids moment of inertia        = " REAL_FMT "\n", coll_I);      
       printf("Number of particles of colloids   = %d\n",Nlist_colloids);
     }
-    if (N_colloids >= 2) {
+    if (N_colloids >= 1) {
       printf("Colloids repulsion cutoff (surface-surface) = " REAL_FMT "\n", coll_rep_cutoff);
       printf("Colloids repulsion cuton (surface-surface)  = " REAL_FMT "\n", coll_rep_cuton);
       printf("Colloids repulsion cutoff (center-center)   = " REAL_FMT "\n", rcutoff_coll_rep);
@@ -63,7 +66,7 @@ __global__ void kernel_print_constants() {
       printf("Magnetic force cutoff             = " REAL_FMT "\n", r0_magnet);
       printf("Magnetic force cutoff square      = " REAL_FMT "\n", r0_magnet_sq);      
       printf("Magnetic force magnitude          = " REAL_FMT "\n", F0_magnet);
-      printf("Magnetic angular velocity is not a GPU constant: it is handled in main\n");
+      printf("Magnetic angular velocity is not a GPU constant: it is handled in main\n");      
       printf("Colloids cutoff                   = " REAL_FMT "\n", rcutoff_coll);
       printf("Colloids cell size                = " REAL_FMT " " REAL_FMT " " REAL_FMT " \n",
 	     cell_colloids_size[0], cell_colloids_size[1], cell_colloids_size[2]);

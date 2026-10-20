@@ -1,7 +1,8 @@
 /******************************************************
-This code has been developed by Adolfo Vazquez-Quesada,
-from the Department of Fundamental Physics at UNED, in
-Madrid, Spain.
+This code has been developed by:
+Adolfo Vazquez-Quesada (1) and Jose Manuel Moreno Valderrama (2)
+(1) Department of Fundamental Physics at UNED, Madrid, Spain
+(2) Remedy Entertainment
 email: a.vazquez-quesada@fisfun.uned.es
 ********************************************************/
 
@@ -105,7 +106,7 @@ __global__ void kernel_repulsion_force_colloids(real* __restrict__ coll_x,
 
 	    if (rijsq <= rcutoff_coll_rep_sq) {
 	      real eij[2];
-	      real r_real         = sqrt(rijsq);
+	      real r_real  = sqrt(rijsq);
 	      real r;
 	      if (rijsq < rcuton_coll_rep_sq) //If both particles are too close
 		r = rcuton_coll_rep;
@@ -189,7 +190,7 @@ __global__ void kernel_repulsion_force_colloids(real* __restrict__ coll_x,
 		if (rijsq < rcuton_coll_rep_sq) //If both particles are too close
 		  r = rcuton_coll_rep;
 		else
-		  r = r_real;		
+		  r = r_real;				
 		real tau_s_neg      = -tau_rep * (r - 2.0 * coll_R)/coll_R;
 		eij[0]              = rij[0]/r_real;
 		eij[1]              = rij[1]/r_real;

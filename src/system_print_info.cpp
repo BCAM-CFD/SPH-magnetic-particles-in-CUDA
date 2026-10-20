@@ -1,7 +1,8 @@
 /******************************************************
-This code has been developed by Adolfo Vazquez-Quesada,
-from the Department of Fundamental Physics at UNED, in
-Madrid, Spain.
+This code has been developed by:
+Adolfo Vazquez-Quesada (1) and Jose Manuel Moreno Valderrama (2)
+(1) Department of Fundamental Physics at UNED, Madrid, Spain
+(2) Remedy Entertainment
 email: a.vazquez-quesada@fisfun.uned.es
 ********************************************************/
 
@@ -28,6 +29,8 @@ void class_system::print_info() {
   std::cout << "Base density, rho0                     = " << rho0 << " \n";
   std::cout << "Transport coefficient a, a             = " << a << " \n";
   std::cout << "Transport coefficient b, b             = " << b << " \n";
+  std::cout << "np * kT                                = " << nkT << "\n";
+  std::cout << "tau                                    = " << tau << "\n";    
   std::cout << "Cell size                              = " << cell_size[0] << " " <<
     cell_size[1] << " " << cell_size[2] << " \n";
   std::cout << "Number of cells                        = " << Ncells[0] << " " << Ncells[1] <<
@@ -68,7 +71,7 @@ void class_system::print_info() {
 		  << coll_x[i] << " " << coll_y[i] << "\n";
     std::cout << "Number of particles in colloids list, Nlist_colloids = " << Nlist_colloids << "\n";
   }
-  if (N_colloids >= 2) {
+  if (N_colloids >= 1) {
     std::cout << "colloids repulsion cutoff (surface-surface) = " << coll_rep_cutoff << "\n";
     std::cout << "colloids repulsion cuton (surface-surface)  = " << coll_rep_cuton << "\n";
     std::cout << "colloids repulsion cutoff (center-center)   = " << rcutoff_coll_rep << "\n";
@@ -78,7 +81,7 @@ void class_system::print_info() {
     std::cout << "Magnetic force cutoff                       = " << r0_magnet << "\n";
     std::cout << "Magnetic force cutoff square                = " << r0_magnet_sq << "\n";  
     std::cout << "Magnetic force magnitude                    = " << F0_magnet << "\n";
-    std::cout << "Magnetic force angular velocity             = " << omega_magnet << "\n";
+    std::cout << "Magnetic force angular velocity             = " << omega_magnet << "\n";     
     std::cout << "colloids cutoff                             = " << rcutoff_coll << "\n";
     std::cout << "Colloids cell size                          = " << cell_colloids_size[0]
 	      << " " << cell_colloids_size[1] << " " << cell_colloids_size[2] << " \n";

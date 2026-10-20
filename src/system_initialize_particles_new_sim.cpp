@@ -1,7 +1,8 @@
 /******************************************************
-This code has been developed by Adolfo Vazquez-Quesada,
-from the Department of Fundamental Physics at UNED, in
-Madrid, Spain.
+This code has been developed by:
+Adolfo Vazquez-Quesada (1) and Jose Manuel Moreno Valderrama (2)
+(1) Department of Fundamental Physics at UNED, Madrid, Spain
+(2) Remedy Entertainment
 email: a.vazquez-quesada@fisfun.uned.es
 ********************************************************/
 
@@ -128,6 +129,14 @@ int class_system::initialize_particles_new_sim(int  Nxyz[3],
     else // dim = 3
       mass[i] = rho * L[0] * (L[1] + 2.0 * wall_width) * L[2] /
 	(Nxyz[0] * Nxyz[1] * Nxyz[2]);
+
+    // Conformation tensor (valid for both 2D and 3D cases)
+    cxx_tensor[i] = 1.0;
+    cxy_tensor[i] = 0.0;
+    cyy_tensor[i] = 1.0;
+    cxz_tensor[i] = 0.0;
+    cyz_tensor[i] = 0.0;
+    czz_tensor[i] = 1.0;    
   }
 
   //--------- Initialization of colloids ----------------
