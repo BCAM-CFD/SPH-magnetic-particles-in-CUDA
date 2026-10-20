@@ -1,7 +1,7 @@
 # SPH magnetic particles in CUDA
 SPH for Newtonian fluids with wall boundaries and suspensions of spherical magnetic particles, implemented in CUDA.
 
-Developed by Adolfo Vázquez-Quesada. 
+Developed by Adolfo Vázquez-Quesada and José Manuel Moreno Valderrama. 
 
 mail: a.vazquez-quesada@fisfun.uned.es
 
@@ -103,9 +103,9 @@ To run the program, execute:
 
 **coll_move**  -> 
  
-          0: colloids are moving.
+          0: colloids are not moving.
 		  
-	      1: colloids are not moving.
+	      1: colloids are moving.
 		  
 **coll_x**     -> Position of one colloid. Put as many coll_x as needed.
 
@@ -123,9 +123,9 @@ To run the program, execute:
 
 **new_sim** -> 
 
-       0: new simulation.
+       0: existing simulation.
 	   
-	   1: existing simulation 
+	   1: new simulation 
 
 ## Key of the output files
 
